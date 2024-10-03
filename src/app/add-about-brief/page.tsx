@@ -221,37 +221,44 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Ensure this is imported to display toast notifications
+import { useRouter } from 'next/navigation'
+import axios from 'axios';
 
 
 const AddProduct: React.FC = () => {
     const [prevImg, setPrevImg] = useState<string | null>(null);
     const [description, setDescription] = useState<string>('');
     const [image, setImage] = useState<File | null>(null);
-
+    const router = useRouter()
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!image) return;
+         if (!image)  return  toast.error("Please Upload Image");
+         if (description == "")  return  toast.error("Description is require");
 
         try {
             const data = new FormData();
-            data.set('file', image);
+          
+                data.set('file', image);
+        
             data.set('description', description);
 
-            const res = await fetch('/api/about-brief', {
-                method: 'POST',
-                body: data
-            });
-
-
-            if (!res.ok) {
-                throw new Error(await res.text());
-            } else {
-                toast.success('Record Updated Successfully');
-                location.reload();
+            const response = await axios.post('/api/about-brief',data);
+            // console.log('response is ====>',response)
+            if(response.data.success === false){
+                toast.error(response.data.message);
+                // setTimeout(() =>{
+                //     router.push('/about-brif-list')
+                // },500)
+            }else{
+                toast.success(response.data.message);
+                setTimeout(() =>{
+                    router.push('/about-brif-list')
+                },500)
             }
+
         } catch (error) {
-            toast.error('Error updating record');
+            // toast.error(error.response.data);
             console.error('Error:', error);
         }
     };
@@ -334,6 +341,7 @@ const AddProduct: React.FC = () => {
                                                                 onChange={handleImageChange}
                                                             />
                                                         </div>
+                                                        <br />
                                                     </label>
                                                     {prevImg && (
                                                         <>

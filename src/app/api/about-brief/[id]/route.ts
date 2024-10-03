@@ -55,8 +55,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Process file upload only if a new file is provided
     if (file) {
+      console.log('file is =>',file)
+      console.log('file name  is =>',file.name)
       // Check if the file name is different from the existing one
-      if (file.name !== aboutBrief.about_image) {
+      if (file.name || file !== aboutBrief.about_image) {
         // Read file bytes and convert them to buffer
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
@@ -98,7 +100,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     );
 
     // Respond with the updated aboutBrief data
-    return NextResponse.json({ success: true, aboutBrief: updatedaboutBrief });
+    return NextResponse.json({ success: true, aboutBrief: updatedaboutBrief,message:"Record updated sucessfully" });
 
   } catch (error: any) {
     console.error('Error updating aboutBrief:', error);

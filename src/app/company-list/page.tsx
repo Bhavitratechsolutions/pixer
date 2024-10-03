@@ -1,3 +1,5 @@
+
+
 'use client'
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -10,8 +12,9 @@ import Pagination from "react-js-pagination";
 
 interface List {
     _id: string;
-    about_image: string;
+    heading:String,
     description: string;
+    company_img: string;
 }
 
 const ProductList = () => {
@@ -26,7 +29,7 @@ const ProductList = () => {
 
     const getDataList = async () => {
         try {
-            const response = await axios.get('/api/about-brief');
+            const response = await axios.get('/api/company');
             if (response.data) {
                 setDataList(response.data);
             }
@@ -39,7 +42,7 @@ const ProductList = () => {
 
     const handleDelete = async (id: string) => {
         try {
-            const response = await axios.delete(`api/about-brief/${id}`);
+            const response = await axios.delete(`api/company/${id}`);
             if (response.data.success) {
                 getDataList();
                 toast.success(response.data.message);
@@ -71,7 +74,9 @@ const ProductList = () => {
                     <div className="col">
                         <div className="bg-white px-4 py-5 rounded-3">
                             <div className="d-flex justify-content-between align-items-center mb-5">
-                                <h5 className="sec-title position-relative mb-0">Products</h5>
+                                <h5 className="sec-title position-relative mb-0">
+                                <Link href={'/add-company'} className="btn btn-sm btn-primary" style={{ float: 'right' }}> + Add Company</Link><br />
+                                </h5>
                                 <div className="w-50">
                                     <div className="search-box d-flex align-items-center border rounded overflow-hidden ms-3">
                                         <div className="h-100 ps-3">
@@ -99,6 +104,7 @@ const ProductList = () => {
                                     <tr>
                                         <th>ID</th>
                                         <th>Image</th>
+                                        <th>Heading</th>
                                         <th>Description</th>
                                         <th>Actions</th>
                                     </tr>
@@ -111,14 +117,15 @@ const ProductList = () => {
                                                 <div className="d-flex align-items-center">
                                                     <Image
                                                         className="rounded me-2"
-                                                        src={item.about_image ? `/images/${item.about_image}` : '/images/placeholder.png'}
+                                                        src={item.company_img ? `/images/${item.company_img}` : '/images/placeholder.png'}
                                                         alt=""
                                                         width={50}
                                                         height={50}
                                                     />
                                                 </div>
                                             </td>
-                                            <td>{ReactHtmlParser(item.description)}</td>
+                                            <td>{item.heading}</td>
+                                            <td>{item.description}</td>
                                             <td>
                                                 <div>
                                                     <Link href={`/edit-about-brief/${item._id}`}>
