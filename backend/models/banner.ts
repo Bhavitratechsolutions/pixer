@@ -1,29 +1,31 @@
+
 import mongoose, { Document, Schema } from "mongoose";
 
-import * as crypto from "crypto";
-
 export interface IBanner extends Document {
-bannerHeadig: string;
-bannerDescription: string;
-  
- 
+    heading: string;
+    description: string;
+    banner_img: String,
+
+
 }
 
 const BannerSchema: Schema<IBanner> = new mongoose.Schema({
-    bannerHeadig: {
-    type: String,
-    required: [true, "Please enter Banner bannerHeadig"],
-  },
-  bannerDescription: {
-    type: String,
-    required: [true, "Please enter Banner  bannerDescription"],
-    unique: true,
-  },
-  
+    heading: {
+        type: String,
+       
+    },
+    description: {
+        type: String,
+        unique: false,
+       
+    },
+    banner_img: {
+        required: false,
+        type: String,
+    }
 });
 
-// Encrypting password before saving the user
 
 
 export default mongoose.models.Banner ||
-  mongoose.model<IBanner>("Banner", BannerSchema);
+    mongoose.model<IBanner>("Banner", BannerSchema);

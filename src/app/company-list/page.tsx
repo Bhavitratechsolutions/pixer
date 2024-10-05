@@ -10,9 +10,11 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Pagination from "react-js-pagination";
 
+
+
 interface List {
     _id: string;
-    heading:String,
+    heading: String,
     description: string;
     company_img: string;
 }
@@ -31,6 +33,7 @@ const ProductList = () => {
         try {
             const response = await axios.get('/api/company');
             if (response.data) {
+                console.log('responsedata',response.data)
                 setDataList(response.data);
             }
         } catch (error) {
@@ -43,13 +46,22 @@ const ProductList = () => {
     const handleDelete = async (id: string) => {
         try {
             const response = await axios.delete(`api/company/${id}`);
-            if (response.data.success) {
+            if (response.status === 200 && response.data.success) {
                 getDataList();
-                toast.success(response.data.message);
+                toast.success(response.data.message || "Item deleted successfully");
             }
-        } catch (error) {
+        } catch (error: any) {
+
             console.error("Error deleting item:", error);
-            toast.error("Failed to delete item.");
+
+            // Ensure that error.response exists before trying to access error details
+            if (error.response && error.response.data && error.response.data.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error("Failed to delete item.");
+            }
+
+
         }
     }
 
@@ -67,7 +79,9 @@ const ProductList = () => {
 
     return (
         <>
-            <ToastContainer />
+       
+  
+       <ToastContainer />
             <div className="container">
                 <div className="row row-cols-1 g-3 g-md-5">
 
@@ -75,7 +89,7 @@ const ProductList = () => {
                         <div className="bg-white px-4 py-5 rounded-3">
                             <div className="d-flex justify-content-between align-items-center mb-5">
                                 <h5 className="sec-title position-relative mb-0">
-                                <Link href={'/add-company'} className="btn btn-sm btn-primary" style={{ float: 'right' }}> + Add Company</Link><br />
+                                    <Link href={'/add-company'} className="btn btn-sm btn-primary" style={{ float: 'right' }}> + Add Company</Link><br />
                                 </h5>
                                 <div className="w-50">
                                     <div className="search-box d-flex align-items-center border rounded overflow-hidden ms-3">
@@ -111,13 +125,16 @@ const ProductList = () => {
                                 </thead>
                                 <tbody>
                                     {currentItems.map((item, i) => (
+                                        
                                         <tr key={item._id}>
+                                            {/* {item.company_img} */}
                                             <td>{indexOfFirstItem + i + 1}</td>
                                             <td>
                                                 <div className="d-flex align-items-center">
                                                     <Image
                                                         className="rounded me-2"
-                                                        src={item.company_img ? `/images/${item.company_img}` : '/images/placeholder.png'}
+                                                        src={!item.company_img ? '/images/placeholder.png'   :  `/images/${item.company_img}`}
+                                                      
                                                         alt=""
                                                         width={50}
                                                         height={50}
@@ -128,11 +145,21 @@ const ProductList = () => {
                                             <td>{item.description}</td>
                                             <td>
                                                 <div>
-                                                    <Link href={`/edit-about-brief/${item._id}`}>
+                                                    <Link href={`/edit-company/${item._id}`}>
                                                         <i className="fa-solid fa-pencil text-color-1" style={{ cursor: 'pointer' }}></i>
                                                     </Link>
-                                                    &nbsp;&nbsp;
-                                                    <i className="fa-solid fa-trash text-danger" style={{ cursor: 'pointer' }} onClick={() => handleDelete(item._id)}></i>
+                                                    &nbsp;&nbsp;    &nbsp;&nbsp;
+                                                    {/* <i className="fa-solid fa-trash text-danger" style={{ cursor: 'pointer' }} onClick={() => handleDelete(item._id)}></i> */}
+                                                    <i
+                                                        className="fa-solid fa-trash text-danger"
+                                                        style={{ cursor: 'pointer' }}
+                                                        onClick={() => {
+                                                            const confirmDelete = window.confirm("Are you sure you want to delete this item?");
+                                                            if (confirmDelete) {
+                                                                handleDelete(item._id);
+                                                            }
+                                                        }}
+                                                    ></i>
                                                 </div>
                                             </td>
                                         </tr>
@@ -159,6 +186,9 @@ const ProductList = () => {
                     </div>
                 </div>
             </div>
+       
+        
+            
 
 
         </>

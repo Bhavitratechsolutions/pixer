@@ -5,109 +5,113 @@ import { writeFile, mkdir, unlink } from 'fs/promises';
 import Company from '../../../../../backend/models/company';
 import dbConnect from '../../../../../backend/config/dbConnect';
 import path from 'path';
+import fs from 'fs/promises'
+
+
 
 
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  dbConnect()
+  try {
+    await dbConnect(); // await the database connection
 
-  const company = await Company.findById(params.id);
-  await company?.deleteOne();
-  return NextResponse.json({
-    success: true,
-    message: "record Deleted Successfully"
-  })
+    const company = await Company.findById(params.id);
+    if (!company) {
+      return NextResponse.json({ success: false, message: "Company not found" }, { status: 404 });
+    }
+    // Delete the company from the database
+    await company?.deleteOne();
 
+    // Delete the associated image file
+    const companyDir = path.join(process.cwd(), 'public', 'images', company.company_img);
+    try {
+      await fs.unlink(companyDir); // Delete image from file system
+    } catch (err) {
+      console.error('Error deleting image:', err);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Record deleted successfully"
+    });
+  } catch (error) {
+    console.error('Error occurred:', error);
+    return NextResponse.json({
+      success: false,
+      message: "Failed to delete record"
+    }, { status: 500 });
+  }
 }
+
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   dbConnect()
   let record = await Company.findById(params.id);
- 
+
   return NextResponse.json(
     record,
   )
 }
 
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  dbConnect()
+
+
+
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const data = await request.formData();
+    const formData = await req.formData();
 
-    // Get file from form data (optional)
-    const file = data.get('file') as unknown as File | null;
+    // console.log('form data is ====>',   formData)
 
-    // Find the existing company record
+
+
+    const file = formData.get('file') as File | null;
+    let filename = "";
+
     const company = await Company.findById(params.id);
     if (!company) {
-      return NextResponse.json({ success: false, message: 'company not found.' }, { status: 404 });
+      return NextResponse.json({ success: false, message: "Company not found" });
     }
 
-    // Get description from form data
-    const headig = data.get('headig');
-    const description = data.get('description');
-    if (!description) {
-      return NextResponse.json({ success: false, message: 'Description is required.' }, { status: 400 });
-    }
 
-    let newFileName = company.company_img; // Default to existing image
-
-    // Process file upload only if a new file is provided
-    if (file) {
-     
-      // Check if the file name is different from the existing one
-      if (file.name || file !== company.company_img) {
-        // Read file bytes and convert them to buffer
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-
-        // Define the directory and new file path
-        const companyDir = path.join(process.cwd(), 'public', 'images');
-        const newFilePath = path.join(companyDir, file.name);
-
-        // Ensure the directory exists
-        await mkdir(companyDir, { recursive: true });
-
-        // Write the new file
-        await writeFile(newFilePath, buffer);
-        console.log(`File saved at ${newFilePath}`);
-
-        // If an old file exists, delete it
-        const oldFileName = company.company_img;
-        if (oldFileName) {
-          const oldFilePath = path.join(companyDir, oldFileName);
-          try {
-            await unlink(oldFilePath);
-            console.log(`Old file removed: ${oldFilePath}`);
-          } catch (error) {
-            console.warn(`Failed to remove old file: ${oldFilePath}`, error);
-          }
-        }
-
-        newFileName = file.name; // Update with the new file name
+    if (file && file.name) {
+      // Check if the company image is the same as the uploaded file (by name or some other means)
+      if (company.company_img === file.name) {
+        filename = company.company_img;
       } else {
-        console.log('File name is the same, skipping file replacement.');
+        // If there's an existing image, delete it
+        if (company.company_img) {
+          const oldImagePath = path.join(process.cwd(), "public/images/", company.company_img);
+          await unlink(oldImagePath).catch((err) => console.log("Old image not found:", err));
+        }
+        // Create a new filename and save the new image
+        filename = Date.now() + file.name.replace(/ /g, "_");
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const newImagePath = path.join(process.cwd(), "public/images/", filename);
+        await writeFile(newImagePath, buffer);
       }
+    } else {
+      filename = company.company_img; // Retain the existing image if no new file is uploaded
+      // console.log('null file here =======================')
     }
 
-    // Update the company with the new description and image filename (if changed)
-    const updatedcompany = await Company.findByIdAndUpdate(
+    const heading = formData.get('heading') as string;
+    const description = formData.get('description') as string;
+
+    // Update the company with the new data
+    const updatedCompany = await Company.findByIdAndUpdate(
       params.id,
-      { $set: {headig:headig, description: description.toString(), company_img: newFileName } },
-      { new: true } // Return the updated document
+      { $set: { heading, description, company_img: filename } },
+      { new: true }
     );
 
-    // Respond with the updated company data
-    return NextResponse.json({ success: true, company: updatedcompany,message:"Record updated sucessfully" });
-
-  } catch (error: any) {
-    console.error('Error updating company:', error);
-    // Handle any errors that occur during the request
-    return NextResponse.json(
-      { success: false, message: 'An error occurred while processing your request.', error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, message: 'Company Updated Successfully', updatedCompany });
+  } catch (error) {
+    console.log("Error occurred:", error);
+    return NextResponse.json({ success: false, message: "Error occurred" });
   }
 }
+
+
+
 

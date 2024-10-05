@@ -8,12 +8,16 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios';
 
 
+
+
 const Page = () => {
     const [prevImg, setPrevImg] = useState<string | null>(null);
     const [heading, setHeading] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [image, setImage] = useState<File | null>(null);
     const router = useRouter()
+
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -29,6 +33,7 @@ const Page = () => {
             data.set('heading', heading);
 
             const response = await axios.post('/api/company', data);
+            // const response = await axios.post('/api/about-brief',data);
 
             if (response.data.success === false) {
                 toast.error(response.data.message);
@@ -67,10 +72,13 @@ const Page = () => {
 
     return (
         <>
+  
+        
+          
             <ToastContainer />
             <div className="container">
                 <h5 className="mb-4">Add Company </h5>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}  encType="multipart/form-data">
                     <div className="row row-cols-1">
                         <div className="col">
                             <div className="py-4 border-top">
@@ -79,7 +87,7 @@ const Page = () => {
                                         <div>
                                             <h6>Featured Image</h6>
                                             <p className="text-secondary">
-                                                Upload your product featured image here <br /> Image size should not be more than 2 MB
+                                                Upload your image here <br /> Image size should not be more than 2 MB
                                             </p>
                                         </div>
                                     </div>
@@ -170,8 +178,8 @@ const Page = () => {
                                             <div className="card-body">
                                                 <div className="row mb-3">
                                                     <div className="col-12">
-                                                        <label className="form-label fw-medium">Heading *</label>
-                                                        <input className="form-control" type="text" name="" placeholder="Name"
+                                                        <label className="form-label fw-medium" >  Company Name *</label>
+                                                        <input className="form-control" type="text" name=""  placeholder="Name"
                                                             value={heading}
                                                             onChange={(e) => setHeading(e.target.value)}
                                                         />
@@ -184,8 +192,8 @@ const Page = () => {
                                             <div className="card-body">
                                                 <div className="row mb-3">
                                                     <div className="col-12">
-                                                        <label className="form-label fw-medium" >Description</label>
-                                                        <textarea className="form-control" value={description} rows={5} onChange={(e) => setDescription(e.target.value)} id="comment" name="text"></textarea>
+                                                        <label className="form-label fw-medium"  >Description</label>
+                                                        <textarea className="form-control" value={description}  placeholder="Description" rows={5} onChange={(e) => setDescription(e.target.value)} id="comment" name="text"></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -214,6 +222,9 @@ const Page = () => {
                     </div>
                 </form>
             </div>
+            
+     
+            
         </>
     );
 };

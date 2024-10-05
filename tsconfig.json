@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/add-banner/page.js", "src/app/admin/api/upload/route.ts", "src/app/add-category/page.js", "src/app/webinfo-list/page.tsx", "backend/models/about-brif.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/add-banner/page.tsx", "src/app/admin/api/upload/route.ts", "src/app/add-category/page.js", "src/app/webinfo-list/page.tsx", "backend/models/about-brif.ts"],
   "exclude": ["node_modules"]
 }

@@ -1,10 +1,8 @@
 'use client'
 import React, { useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
-
-
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { useRouter } from 'next/navigation'
+import axios from "axios";
 
 
 
@@ -14,39 +12,38 @@ const AddWebInfo = () => {
     const [infoKey, setInfoKey] = useState("");
     const [infoValue, setInfoValue] = useState("");
 
-    const [values, setValues] = useState([])
-    const [title, setTitle] = useState("")
-    const [pageDesc, setPageDesc] = useState("");
+    const router = useRouter()
+
 
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        let dormData = {
-            infoKey,
-            infoValue,
+
+        try {
+            let formData = {
+                infoKey,
+                infoValue,
+            }
+
+
+            const response = await axios.post('/api/web-info', formData);
+            // const response = await axios.post('/api/about-brief',data);
+
+            if (response.data.success === false) {
+                toast.error(response.data.message);
+
+            } else {
+                toast.success(response.data.message);
+                setTimeout(() => {
+                    router.push('/webinfo-list')
+                }, 500)
+            }
+
+        } catch (error) {
+            // toast.error(error.response.data);
+            console.error('Error:', error);
         }
-
-        const data = JSON.stringify(dormData);
-
-        const res = await fetch('api/web-info', {
-            method: 'POST',
-            body: data
-        })
-
-        // handle the error
-        if (!res.ok) {
-            throw new Error(await res.text())
-        } else {
-            // handleClose()
-            location.reload()
-
-        }
-
-    }
-
-    const handleChange = (e: any, editor: any) => {
-        setPageDesc(editor.getData());
 
     }
 
@@ -55,9 +52,9 @@ const AddWebInfo = () => {
     return (
         <>
 
-<ToastContainer />
+            <ToastContainer />
             <div className="container">
-                <h5 className="mb-4"> Web Info   </h5>
+                <h5 className="mb-4"> Add Web Info   </h5>
                 <form action="#" method="post" onSubmit={handleSubmit}>
                     <div className="row row-cols-1">
 
@@ -67,15 +64,11 @@ const AddWebInfo = () => {
                                     <div className="col-md-4">
                                         <div>
                                             <h6>Description</h6>
-                                            <p className="text-secondary">Edit your product description and necessary information from here</p>
+                                            <p className="text-secondary">Add your  necessary information from here</p>
                                         </div>
                                     </div>
                                     <div className="col-md-8">
 
-                                        <CKEditor
-                                            editor={ClassicEditor}
-                                            onChange={(e, editor) => handleChange(e, editor)}
-                                        />
 
                                         <div className="card border-0 p-3 shadow-sm">
                                             <div className="card-body">

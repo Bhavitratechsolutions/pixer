@@ -9,8 +9,6 @@ const DefaultPage = () => {
   
   return (
     <>
-
- 
      
           <Summery />
        

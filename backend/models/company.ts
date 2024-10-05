@@ -2,23 +2,24 @@ import mongoose, { Document, Schema } from "mongoose";
 
 
 
-export interface IAboutBrief extends Document {
-    headig: string;
+export interface ICompany extends Document {
+    heading: string;
     description: string;
     company_img: String,
 
 
 }
 
-const CompanySchema: Schema<IAboutBrief> = new mongoose.Schema({
-    headig: {
+const CompanySchema: Schema<ICompany> = new mongoose.Schema({
+    heading: {
         type: String,
-        required: [true, "Please enter Banner bannerHeadig"],
+        // required: [true, "Please enter Company heading"],
     },
     description: {
         type: String,
-        required: [true, "Please enter Banner  bannerDescription"],
-        unique: true,
+        unique: false,
+        // required: [true, "Please enter Company  Description"],
+        // unique: true,
     },
     company_img: {
         required: false,
@@ -30,4 +31,4 @@ const CompanySchema: Schema<IAboutBrief> = new mongoose.Schema({
 
 
 export default mongoose.models.Company ||
-    mongoose.model<IAboutBrief>("Company", CompanySchema);
+    mongoose.model<ICompany>("Company", CompanySchema);
